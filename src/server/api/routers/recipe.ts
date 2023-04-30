@@ -17,6 +17,10 @@ export const recipeRouter = createTRPCRouter({
         where: {
           id: input.id,
         },
+        include: {
+          relatedRecipes: { include: { recipe: true, related: true } },
+          recipesRelatedTo: { include: { recipe: true, related: true } },
+        },
       });
 
       // Define the regular expression pattern with capture groups
@@ -35,6 +39,9 @@ export const recipeRouter = createTRPCRouter({
       return {
         ...recipe,
         ingredients: ingredients,
+        // relatedRecipes: await prisma.relatedRecipe.findMany({
+        //   where: { recipeId: input.id },
+        // }),
       };
     }),
   delete: publicProcedure
@@ -50,15 +57,30 @@ export const recipeRouter = createTRPCRouter({
       z.object({
         name: z.string(),
         instructions: z.string(),
+        related: z.array(z.string()),
       })
     )
     .mutation(async ({ input }) => {
-      await prisma.recipe.create({
+      const recipe = await prisma.recipe.create({
         data: {
           name: input.name,
           instructions: input.instructions,
         },
       });
+
+      for (const related of input.related) {
+        const relatedRecipe = await prisma.recipe.findUnique({
+          where: { id: related },
+        });
+        if (relatedRecipe) {
+          await prisma.relatedRecipe.create({
+            data: {
+              recipeId: recipe.id,
+              relatedId: related,
+            },
+          });
+        }
+      }
 
       return {
         success: true,

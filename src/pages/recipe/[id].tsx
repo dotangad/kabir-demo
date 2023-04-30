@@ -10,8 +10,10 @@ import {
   Input,
   List,
   ListItem,
+  Text,
   Textarea,
   UnorderedList,
+  Link as CLink,
 } from "@chakra-ui/react";
 import { type NextPage } from "next";
 import Head from "next/head";
@@ -29,7 +31,10 @@ const Recipe: NextPage = () => {
   } = useForm();
   const router = useRouter();
   const { id } = router.query;
-  const recipeQ = api.recipe.recipe.useQuery({ id: id as string });
+  const recipeQ = api.recipe.recipe.useQuery(
+    { id: id as string },
+    { enabled: !!id }
+  );
   const deleteM = api.recipe.delete.useMutation({
     onSuccess: () => {
       router.push("/");
@@ -48,6 +53,7 @@ const Recipe: NextPage = () => {
 
         <Box my={10} mx={"auto"} maxW="lg">
           <Heading fontSize="2xl">{recipeQ.data?.name}</Heading>
+          <Text fontFamily={"monospace"}>{recipeQ.data?.id}</Text>
 
           <Box my={6}>
             <Heading fontSize="lg">Ingredients</Heading>
@@ -65,6 +71,36 @@ const Recipe: NextPage = () => {
             <Box as="pre" whiteSpace={"pre-wrap"}>
               {recipeQ.data?.instructions}
             </Box>
+          </Box>
+
+          <Box my={6}>
+            <Heading fontSize="lg">Related Recipes</Heading>
+            <UnorderedList mt={2}>
+              {/* @ts-ignore */}
+              {recipeQ.data?.relatedRecipes.map((recipe, i) => (
+                <ListItem key={i}>
+                  <CLink
+                    as={Link}
+                    href={`/recipe/${recipe.recipe.id}`}
+                    color="blue.400"
+                  >
+                    {recipe.recipe.name}
+                  </CLink>
+                </ListItem>
+              ))}
+              {/* @ts-ignore */}
+              {recipeQ.data?.recipesRelatedTo.map((recipe, i) => (
+                <ListItem key={i}>
+                  <CLink
+                    as={Link}
+                    href={`/recipe/${recipe.related?.id}`}
+                    color="blue.400"
+                  >
+                    {recipe.related?.name}
+                  </CLink>
+                </ListItem>
+              ))}
+            </UnorderedList>
           </Box>
 
           <Box>

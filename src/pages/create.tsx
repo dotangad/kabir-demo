@@ -37,6 +37,10 @@ const Create: NextPage = () => {
     createRecipeM.mutate({
       name: data.name as string,
       instructions: data.instructions as string,
+      related: data.related
+        .split(",")
+        .map((x: string) => x.trim())
+        .filter((x: string) => x !== "") as string[],
     });
   });
 
@@ -80,6 +84,18 @@ const Create: NextPage = () => {
             />
             <FormErrorMessage>
               {errors.instructions?.message as string}
+            </FormErrorMessage>
+          </FormControl>
+
+          <FormControl isInvalid={!!errors.related}>
+            <FormLabel>Related IDs (comma separated)</FormLabel>
+            <Input
+              type="text"
+              placeholder="kjdlkjfsd23hdfjg, jhakjdhdkbf12"
+              {...register("related", { required: true })}
+            />
+            <FormErrorMessage>
+              {errors.related?.message as string}
             </FormErrorMessage>
           </FormControl>
 

@@ -17,9 +17,21 @@ model Example {
 }
 
 model Recipe {
-    id           String   @id @default(cuid())
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
-    name         String   @db.VarChar(255)
-    instructions String   @db.Text
+    id               String          @id @default(cuid())
+    createdAt        DateTime        @default(now())
+    updatedAt        DateTime        @updatedAt
+    name             String          @db.VarChar(255)
+    instructions     String          @db.Text
+    relatedRecipes   RelatedRecipe[] @relation("related")
+    recipesRelatedTo RelatedRecipe[] @relation("recipe")
+}
+
+model RelatedRecipe {
+    id        String   @id @default(cuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    recipe    Recipe   @relation("recipe", fields: [recipeId], references: [id])
+    recipeId  String
+    related   Recipe   @relation("related", fields: [relatedId], references: [id])
+    relatedId String
 }
